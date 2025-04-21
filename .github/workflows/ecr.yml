@@ -1,0 +1,48 @@
+name: app-build-push
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-app:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials for Docker/ECR
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Create ECR
+        run: |
+          aws ecr create-repository --repository-name patient-service
+          aws ecr create-repository --repository-name appointment-service
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: us-east-1
+
+      - name: Build patient-service Docker image
+        run: |
+          docker build -t 557548602903.dkr.ecr.us-east-1.amazonaws.com/patient-service:latest -f app/patient-service/Dockerfile app/patient-service
+
+      - name: Build appointment-service Docker image
+        run: |
+          docker build -t 557548602903.dkr.ecr.us-east-1.amazonaws.com/appointment-service:latest -f app/appointment-service/Dockerfile app/appointment-service
+
+      - name: Push patient-service Docker image to ECR
+        run: |
+          docker push 557548602903.dkr.ecr.us-east-1.amazonaws.com/patient-service:latest
+          
+      - name: Push appointment-service Docker image to ECR
+        run: |
+          docker push 557548602903.dkr.ecr.us-east-1.amazonaws.com/appointment-service:latest
