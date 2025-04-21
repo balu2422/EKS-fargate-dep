@@ -3,8 +3,8 @@ name: EKS Fargate Apply/Destroy
 on:
   workflow_dispatch:
     inputs:
-      mode:
-        description: 'Choose Terraform mode: apply or destroy'
+      action:
+        description: 'Terraform action to perform (apply or destroy)'
         required: true
         default: 'apply'
         type: choice
@@ -16,21 +16,25 @@ on:
         required: true
         default: 'my-eks-cluster'
 
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: 557548602903
+
 jobs:
   eks-deployment:
     name: EKS Fargate Deployment
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: us-east-1
-      CLUSTER_NAME: ${{ github.event.inputs.cluster_name }}
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::557548602903:role/mytestrole-OIDC
           aws-region: ${{ env.AWS_REGION }}
@@ -39,11 +43,11 @@ jobs:
         run: |
           aws eks update-kubeconfig \
             --region $AWS_REGION \
-            --name $CLUSTER_NAME
+            --name ${{ github.event.inputs.cluster_name }}
 
       - name: Deploy or Destroy Kubernetes Resources
         run: |
-          if [[ "${{ github.event.inputs.mode }}" == "apply" ]]; then
+          if [[ "${{ github.event.inputs.action }}" == "apply" ]]; then
             echo "🚀 Applying Kubernetes manifests..."
             kubectl apply -f app/k8s/deployment-appointment.yaml
             kubectl apply -f app/k8s/service-appointment.yaml
@@ -51,7 +55,7 @@ jobs:
             kubectl apply -f app/k8s/service-patient.yaml
             kubectl apply -f app/k8s/ingress.yaml
             echo "✅ Apply completed!"
-          elif [[ "${{ github.event.inputs.mode }}" == "destroy" ]]; then
+          elif [[ "${{ github.event.inputs.action }}" == "destroy" ]]; then
             echo "🔥 Destroying Kubernetes resources..."
             kubectl delete -f app/k8s/ingress.yaml --ignore-not-found
             kubectl delete -f app/k8s/service-patient.yaml --ignore-not-found
