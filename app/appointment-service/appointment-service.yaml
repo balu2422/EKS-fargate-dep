@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: appointment-service
-  namespace: today-ns
+  namespace: eks-ns
 spec:
   type: LoadBalancer
   selector:
