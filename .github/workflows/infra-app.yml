@@ -1,0 +1,65 @@
+name: EKS Fargate Apply/Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Choose Terraform mode: apply or destroy'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+      cluster_name:
+        description: 'EKS Cluster Name (created from Terraform)'
+        required: true
+        default: 'my-eks-cluster'
+
+jobs:
+  eks-deployment:
+    name: EKS Fargate Deployment
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      CLUSTER_NAME: ${{ github.event.inputs.cluster_name }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::557548602903:role/mytestrole-OIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name $CLUSTER_NAME
+
+      - name: Deploy or Destroy Kubernetes Resources
+        run: |
+          if [[ "${{ github.event.inputs.mode }}" == "apply" ]]; then
+            echo "🚀 Applying Kubernetes manifests..."
+            kubectl apply -f app/k8s/deployment-appointment.yaml
+            kubectl apply -f app/k8s/service-appointment.yaml
+            kubectl apply -f app/k8s/deployment-patient.yaml
+            kubectl apply -f app/k8s/service-patient.yaml
+            kubectl apply -f app/k8s/ingress.yaml
+            echo "✅ Apply completed!"
+          elif [[ "${{ github.event.inputs.mode }}" == "destroy" ]]; then
+            echo "🔥 Destroying Kubernetes resources..."
+            kubectl delete -f app/k8s/ingress.yaml --ignore-not-found
+            kubectl delete -f app/k8s/service-patient.yaml --ignore-not-found
+            kubectl delete -f app/k8s/deployment-patient.yaml --ignore-not-found
+            kubectl delete -f app/k8s/service-appointment.yaml --ignore-not-found
+            kubectl delete -f app/k8s/deployment-appointment.yaml --ignore-not-found
+            echo "🗑️ Destroy completed."
+          else
+            echo "❌ Invalid mode selected."
+            exit 1
+          fi
