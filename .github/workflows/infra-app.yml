@@ -7,10 +7,6 @@ on:
         description: 'Terraform action to perform (apply or destroy)'
         required: true
         default: 'apply'
-        type: choice
-        options:
-          - apply
-          - destroy
       cluster_name:
         description: 'EKS Cluster Name (created from Terraform)'
         required: true
@@ -18,11 +14,10 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  AWS_ACCOUNT_ID: 557548602903
+  CLUSTER_NAME: ${{ github.event.inputs.cluster_name }}
 
 jobs:
-  eks-deployment:
-    name: EKS Fargate Deployment
+  terraform-deploy:
     runs-on: ubuntu-latest
 
     permissions:
@@ -39,11 +34,23 @@ jobs:
           role-to-assume: arn:aws:iam::557548602903:role/mytestrole-OIDC
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update kubeconfig for EKS
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      - name: Update kubeconfig for EKS Cluster
         run: |
           aws eks update-kubeconfig \
             --region $AWS_REGION \
-            --name ${{ github.event.inputs.cluster_name }}
+            --name $CLUSTER_NAME
 
       - name: Deploy or Destroy Kubernetes Resources
         run: |
