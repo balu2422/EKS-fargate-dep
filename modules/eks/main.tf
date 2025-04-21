@@ -9,6 +9,12 @@ resource "aws_eks_cluster" "eks_cluster" {
   depends_on = [aws_iam_role_policy_attachment.eks_cluster_policy_attachment]
 }
 
+resource "kubernetes_namespace" "eks_ns" {
+  metadata {
+    name = var.namespace
+  }
+}
+
 resource "aws_eks_fargate_profile" "fargate_profile" {
   cluster_name           = aws_eks_cluster.eks_cluster.name
   fargate_profile_name   = var.fargate_profile_name
@@ -17,7 +23,7 @@ resource "aws_eks_fargate_profile" "fargate_profile" {
   subnets = var.fargate_subnet_ids
 
   selector {
-    namespace = "default"
+    namespace = var.namespace
   }
 
   depends_on = [aws_eks_cluster.eks_cluster]
@@ -29,4 +35,8 @@ output "cluster_name" {
 
 output "fargate_profile_name" {
   value = aws_eks_fargate_profile.fargate_profile.name
+}
+
+output "namespace_name" {
+  value = kubernetes_namespace.eks_ns.metadata[0].name
 }
