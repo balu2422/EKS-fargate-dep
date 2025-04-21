@@ -27,3 +27,8 @@ variable "fargate_pod_role_arn" {
   description = "Fargate Pod execution role ARN"
   type        = string
 }
+
+variable "namespace" {
+  description = "Kubernetes namespace for Fargate workloads"
+  type        = string
+}
