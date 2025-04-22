@@ -40,9 +40,9 @@ jobs:
       - name: Install kubectl
         run: |
           # Fetch the stable Kubernetes version
-          KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt)
+          KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt | tr -d '\n')
 
-          # Download the kubectl binary
+          # Download the kubectl binary for the stable version
           curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
 
           # Install kubectl
