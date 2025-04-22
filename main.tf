@@ -24,7 +24,7 @@ module "eks" {
   cluster_name         = var.eks_cluster_name
   private_subnet_ids   = [module.vpc.private_subnet_az1_id, module.vpc.private_subnet_az2_id]
   fargate_subnet_ids   = [module.vpc.private_subnet_az1_id, module.vpc.private_subnet_az2_id]
-  cluster_role_arn     = module.iam.eks_cluster_role_arn
+  cluster_role_arn     = module.iam.cluster_role_arn
   fargate_pod_role_arn = module.iam.fargate_pod_role_arn
   fargate_profile_name = var.fargate_profile_name
   namespace            = var.eks_namespace
