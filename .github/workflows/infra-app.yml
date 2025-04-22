@@ -56,19 +56,19 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.action }}" == "apply" ]]; then
             echo "🚀 Applying Kubernetes manifests..."
-            kubectl apply -f app/k8s/deployment-appointment.yaml
-            kubectl apply -f app/k8s/service-appointment.yaml
-            kubectl apply -f app/k8s/deployment-patient.yaml
-            kubectl apply -f app/k8s/service-patient.yaml
-            kubectl apply -f app/k8s/ingress.yaml
+            kubectl apply -f app/appointment-service/deployment-appointment.yaml
+            kubectl apply -f app/appointment-service/service-appointment.yaml
+            kubectl apply -f app/patient-service/deployment-patient.yaml
+            kubectl apply -f app/patient-service/service-patient.yaml
+            kubectl apply -f app/ingress.yaml
             echo "✅ Apply completed!"
           elif [[ "${{ github.event.inputs.action }}" == "destroy" ]]; then
             echo "🔥 Destroying Kubernetes resources..."
-            kubectl delete -f app/k8s/ingress.yaml --ignore-not-found
-            kubectl delete -f app/k8s/service-patient.yaml --ignore-not-found
-            kubectl delete -f app/k8s/deployment-patient.yaml --ignore-not-found
-            kubectl delete -f app/k8s/service-appointment.yaml --ignore-not-found
-            kubectl delete -f app/k8s/deployment-appointment.yaml --ignore-not-found
+            kubectl delete -f app/ingress.yaml --ignore-not-found
+            kubectl delete -f app/patient-service/service-patient.yaml --ignore-not-found
+            kubectl delete -f app/patient-service/deployment-patient.yaml --ignore-not-found
+            kubectl delete -f app/appointment-service/service-appointment.yaml --ignore-not-found
+            kubectl delete -f app/appointment-service/deployment-appointment.yaml --ignore-not-found
             echo "🗑️ Destroy completed."
           else
             echo "❌ Invalid mode selected."
