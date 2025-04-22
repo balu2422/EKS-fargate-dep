@@ -56,11 +56,11 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.action }}" == "apply" ]]; then
             echo "🚀 Applying Kubernetes manifests..."
-            kubectl apply -f app/appointment-service/deployment-appointment.yaml
-            kubectl apply -f app/appointment-service/service-appointment.yaml
-            kubectl apply -f app/patient-service/deployment-patient.yaml
-            kubectl apply -f app/patient-service/service-patient.yaml
-            kubectl apply -f app/ingress.yaml
+            kubectl apply -f app/appointment-service/appointment-deployment.yaml
+            kubectl apply -f app/appointment-service/appointment-service.yaml
+            kubectl apply -f app/patient-service/patient-deployment.yaml
+            kubectl apply -f app/patient-service/patient-service.yaml
+            kubectl apply -f app/nginx-ingress.yaml
             echo "✅ Apply completed!"
           elif [[ "${{ github.event.inputs.action }}" == "destroy" ]]; then
             echo "🔥 Destroying Kubernetes resources..."
