@@ -1,3 +1,8 @@
+provider "kubernetes" {
+  config_path    = "~/.kube/config"
+  config_context = "arn:aws:eks:${var.region}:${data.aws_caller_identity.current.account_id}:cluster/${var.cluster_name}"
+}
+
 # Data sources to fetch EKS cluster details
 data "aws_eks_cluster" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
