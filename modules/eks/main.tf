@@ -7,11 +7,12 @@ resource "aws_eks_cluster" "eks_cluster" {
   }
 }
 
-resource "kubernetes_namespace" "eks_ns" {
-  metadata {
-    name = var.namespace
-  }
-}
+#resource "kubernetes_namespace" "eks_ns" {
+#  metadata {
+#    name = var.namespace
+# # }
+#}
+
 
 resource "aws_eks_fargate_profile" "fargate_profile" {
   cluster_name           = aws_eks_cluster.eks_cluster.name
@@ -35,6 +36,6 @@ output "fargate_profile_name" {
   value = aws_eks_fargate_profile.fargate_profile.fargate_profile_name
 }
 
-output "namespace_name" {
-  value = kubernetes_namespace.eks_ns.metadata[0].name
-}
+#output "namespace_name" {
+## value = kubernetes_namespace.eks_ns.metadata[0].name
+#}
