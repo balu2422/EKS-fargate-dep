@@ -32,7 +32,7 @@ output "cluster_name" {
 }
 
 output "fargate_profile_name" {
-  value = aws_eks_fargate_profile.fargate_profile.name
+  value = aws_eks_fargate_profile.fargate_profile.fargate_profile_name
 }
 
 output "namespace_name" {
