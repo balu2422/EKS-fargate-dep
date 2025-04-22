@@ -15,8 +15,8 @@ module "vpc" {
 }
 
 module "iam" {
-  source         = "./modules/iam"
-  name           = var.iam_role_name
+  source = "./modules/iam"
+  name   = var.iam_role_name
 }
 
 module "eks" {
