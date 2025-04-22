@@ -25,7 +25,7 @@ resource "aws_eks_fargate_profile" "fargate_profile" {
 
 
 # Kubernetes Namespace resource creation
-resource "kubernetes_namespace" "eks_ns" {
+resource "kubernetes_namespace" "eks_namespace" {
   metadata {
     name = var.namespace
   }
@@ -47,5 +47,5 @@ output "fargate_profile_name" {
 
 # Output the Kubernetes Namespace name
 output "namespace_name" {
-  value = kubernetes_namespace.eks_ns.metadata[0].name
+  value = kubernetes_namespace.eks_namespace.metadata[0].name
 }
