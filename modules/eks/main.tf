@@ -32,6 +32,18 @@ resource "kubernetes_namespace" "eks_ns" {
   depends_on = [aws_eks_cluster.eks_cluster]  # Ensure namespace is created after EKS cluster
 }
 
+# Kubernetes Provider configuration
+provider "kubernetes" {
+  host                   = aws_eks_cluster.eks_cluster.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.eks_cluster.cert_data)
+  token                  = data.aws_eks_cluster_auth.eks_cluster.token
+}
+
+# EKS Cluster authentication data
+data "aws_eks_cluster_auth" "eks_cluster" {
+  name = aws_eks_cluster.eks_cluster.name
+}
+
 # Output the EKS Cluster name
 output "cluster_name" {
   value = aws_eks_cluster.eks_cluster.name
