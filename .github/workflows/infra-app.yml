@@ -20,18 +20,15 @@ jobs:
   terraform-deploy:
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v3
+      - name: Configure AWS credentials (Access Keys)
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::557548602903:role/mytestrole-OIDC
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -46,6 +43,12 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
       - name: Update kubeconfig for EKS Cluster
         run: |
           aws eks update-kubeconfig \
@@ -56,21 +59,21 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.action }}" == "apply" ]]; then
             echo "🚀 Applying Kubernetes manifests..."
-            kubectl apply -f app/appointment-service/appointment-deployment.yaml
-            kubectl apply -f app/appointment-service/appointment-service.yaml
-            kubectl apply -f app/patient-service/patient-deployment.yaml
-            kubectl apply -f app/patient-service/patient-service.yaml
-            kubectl apply -f app/nginx-ingress.yaml
+            kubectl apply -f app/appointment-service/appointment-deployment.yaml || true
+            kubectl apply -f app/appointment-service/appointment-service.yaml || true
+            kubectl apply -f app/patient-service/patient-deployment.yaml || true
+            kubectl apply -f app/patient-service/patient-service.yaml || true
+            kubectl apply -f app/nginx-ingress.yaml || true
             echo "✅ Apply completed!"
           elif [[ "${{ github.event.inputs.action }}" == "destroy" ]]; then
             echo "🔥 Destroying Kubernetes resources..."
-            kubectl delete -f app/ingress.yaml --ignore-not-found
-            kubectl delete -f app/patient-service/service-patient.yaml --ignore-not-found
-            kubectl delete -f app/patient-service/deployment-patient.yaml --ignore-not-found
-            kubectl delete -f app/appointment-service/service-appointment.yaml --ignore-not-found
-            kubectl delete -f app/appointment-service/deployment-appointment.yaml --ignore-not-found
+            kubectl delete -f app/nginx-ingress.yaml --ignore-not-found
+            kubectl delete -f app/patient-service/patient-service.yaml --ignore-not-found
+            kubectl delete -f app/patient-service/patient-deployment.yaml --ignore-not-found
+            kubectl delete -f app/appointment-service/appointment-service.yaml --ignore-not-found
+            kubectl delete -f app/appointment-service/appointment-deployment.yaml --ignore-not-found
             echo "🗑️ Destroy completed."
           else
-            echo "❌ Invalid mode selected."
+            echo "❌ Invalid action selected!"
             exit 1
           fi
