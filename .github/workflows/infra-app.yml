@@ -37,20 +37,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Install kubectl
-        run: |
-          # Fetch the stable Kubernetes version
-          KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt | tr -d '\n')
-
-          # Ensure the kubectl binary URL is correct
-          DOWNLOAD_URL="https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-
-          # Download the kubectl binary
-          curl -LO $DOWNLOAD_URL
-
-          # Install kubectl
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
 
       - name: Update kubeconfig for EKS Cluster
         run: |
