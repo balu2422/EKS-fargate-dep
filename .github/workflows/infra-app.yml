@@ -10,7 +10,7 @@ on:
       cluster_name:
         description: 'EKS Cluster Name (created from Terraform)'
         required: true
-        default: 'my-eks-cluster'
+        default: 'eks-cluster'
 
 env:
   AWS_REGION: us-east-1
