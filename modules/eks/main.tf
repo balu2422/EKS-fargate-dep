@@ -1,8 +1,11 @@
+provider "kubernetes" {
+  alias                  = "with_dependency"
+  host                   = data.aws_eks_cluster.eks_cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.eks_cluster.token
+}
 
-# Fetch current AWS caller identity
-data "aws_caller_identity" "current" {}
-
-# Fetch EKS cluster details
+# Data sources to fetch EKS cluster details
 data "aws_eks_cluster" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
 }
@@ -11,7 +14,7 @@ data "aws_eks_cluster_auth" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
 }
 
-# Create EKS Cluster
+# EKS Cluster
 resource "aws_eks_cluster" "eks_cluster" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
@@ -21,7 +24,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   }
 }
 
-# Create EKS Fargate Profile
+# Fargate Profile
 resource "aws_eks_fargate_profile" "fargate_profile" {
   cluster_name           = aws_eks_cluster.eks_cluster.name
   fargate_profile_name   = var.fargate_profile_name
@@ -35,20 +38,17 @@ resource "aws_eks_fargate_profile" "fargate_profile" {
   depends_on = [aws_eks_cluster.eks_cluster]
 }
 
-# Configure Kubernetes provider properly (NO config_path to avoid localhost error)
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.eks_cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.eks_cluster.token
-}
-
-# Create Kubernetes Namespace
+# Kubernetes Namespace
 resource "kubernetes_namespace" "eks_namespace" {
+  provider = kubernetes.with_dependency
+
   metadata {
     name = var.namespace
   }
 
-  depends_on = [aws_eks_cluster.eks_cluster]
+  depends_on = [
+    aws_eks_fargate_profile.fargate_profile
+  ]
 }
 
 # Outputs
