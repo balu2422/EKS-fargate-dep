@@ -1,4 +1,4 @@
-name: EKS Fargate Apply/Destroy
+name: EKS Fargate Apply/Destro
 
 on:
   workflow_dispatch:
