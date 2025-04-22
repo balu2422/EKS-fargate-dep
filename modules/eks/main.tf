@@ -7,13 +7,6 @@ data "aws_eks_cluster_auth" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
 }
 
-# Configure Kubernetes provider with data from the created EKS cluster
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.eks_cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.eks_cluster.token
-}
-
 # EKS Cluster resource creation
 resource "aws_eks_cluster" "eks_cluster" {
   name     = var.cluster_name
@@ -38,13 +31,28 @@ resource "aws_eks_fargate_profile" "fargate_profile" {
   depends_on = [aws_eks_cluster.eks_cluster]
 }
 
+# Create null resource to delay Kubernetes provider usage
+resource "null_resource" "wait_for_eks" {
+  depends_on = [aws_eks_cluster.eks_cluster]
+}
+
+# Configure Kubernetes provider with data from the created EKS cluster
+provider "kubernetes" {
+  alias                  = "with_dependency"
+  host                   = data.aws_eks_cluster.eks_cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.eks_cluster.token
+}
+
 # Kubernetes Namespace resource creation
 resource "kubernetes_namespace" "eks_namespace" {
+  provider = kubernetes.with_dependency
+
   metadata {
     name = var.namespace
   }
 
-  depends_on = [aws_eks_cluster.eks_cluster]
+  depends_on = [null_resource.wait_for_eks]
 }
 
 # Outputs
