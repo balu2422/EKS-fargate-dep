@@ -18,7 +18,7 @@ resource "aws_eks_fargate_profile" "fargate_profile" {
   fargate_profile_name   = var.fargate_profile_name
   pod_execution_role_arn = var.fargate_pod_role_arn
 
-  subnets = var.fargate_subnet_ids
+  subnet_ids = var.fargate_subnet_ids  # ✅ FIXED from `subnets` to `subnet_ids`
 
   selector {
     namespace = var.namespace
