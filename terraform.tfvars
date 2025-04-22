@@ -11,5 +11,5 @@ private_subnet_az2_cidr   = "10.0.4.0/24"
 
 iam_role_name             = "eks-iam-role"
 eks_cluster_name          = "eks-cluster"
-fargate_profile_name      = "eks-fargate-profile"
+fargate_profile_name      = "fargate-profile"
 eks_namespace             = "eks-ns"
