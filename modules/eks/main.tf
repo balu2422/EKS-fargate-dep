@@ -45,16 +45,6 @@ provider "kubernetes" {
 }
 
 # Kubernetes Namespace resource creation
-resource "kubernetes_namespace" "eks_namespace" {
-  provider = kubernetes.with_dependency
-
-  metadata {
-    name = var.namespace
-  }
-
-  depends_on = [null_resource.wait_for_eks]
-}
-
 # Outputs
 output "cluster_name" {
   value = aws_eks_cluster.eks_cluster.name
