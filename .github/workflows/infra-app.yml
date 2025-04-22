@@ -37,12 +37,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan
-        run: terraform plan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -54,6 +48,12 @@ jobs:
           aws eks update-kubeconfig \
             --region $AWS_REGION \
             --name $CLUSTER_NAME
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
 
       - name: Deploy or Destroy Kubernetes Resources
         run: |
