@@ -1,9 +1,8 @@
-provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "arn:aws:eks:${var.region}:${data.aws_caller_identity.current.account_id}:cluster/${var.cluster_name}"
-}
 
-# Data sources to fetch EKS cluster details
+# Fetch current AWS caller identity
+data "aws_caller_identity" "current" {}
+
+# Fetch EKS cluster details
 data "aws_eks_cluster" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
 }
@@ -12,7 +11,7 @@ data "aws_eks_cluster_auth" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
 }
 
-# EKS Cluster resource creation
+# Create EKS Cluster
 resource "aws_eks_cluster" "eks_cluster" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
@@ -22,7 +21,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   }
 }
 
-# EKS Fargate Profile resource creation
+# Create EKS Fargate Profile
 resource "aws_eks_fargate_profile" "fargate_profile" {
   cluster_name           = aws_eks_cluster.eks_cluster.name
   fargate_profile_name   = var.fargate_profile_name
@@ -36,20 +35,14 @@ resource "aws_eks_fargate_profile" "fargate_profile" {
   depends_on = [aws_eks_cluster.eks_cluster]
 }
 
-# Create null resource to delay Kubernetes provider usage
-resource "null_resource" "wait_for_eks" {
-  depends_on = [aws_eks_cluster.eks_cluster]
-}
-
-# Configure Kubernetes provider with data from the created EKS cluster
+# Configure Kubernetes provider properly (NO config_path to avoid localhost error)
 provider "kubernetes" {
-  alias                  = "with_dependency"
   host                   = data.aws_eks_cluster.eks_cluster.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.eks_cluster.token
 }
 
-# Kubernetes Namespace resource creation
+# Create Kubernetes Namespace
 resource "kubernetes_namespace" "eks_namespace" {
   metadata {
     name = var.namespace
